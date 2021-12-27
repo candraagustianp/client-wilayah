@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <link rel="stylesheet" href="assets/vendor/bootstrap/css/bootstrap.min.css">
+        <title>Wilayah</title>
+    </head>
+    <body>
+        <div class="container">
+            <div class="row">
+                <form action="" class="select-wilayah">
+                    <div class="form-group">
+                        <select name="provinsi" id="provinsi">
+                            <option value="pilih">--pilih provinsi--</option>
+                        </select>
+                        <select name="kota" id="kota">
+                            <option value="kosong">--pilih provinsi dulu--</option>
+                        </select>
+                        <select name="kecamatan" id="kecamatan">
+                            <option value="kosong">--pilih kota/kab dulu--</option>
+                        </select>
+                        <select name="kelurahan" id="kelurahan">
+                            <option value="kosong">--pilih kecamatan dahulu--</option>
+                        </select>
+                        
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <script>
+            const url = "http://127.0.0.1:3000/api/";
+            let provinsi = document.getElementById("provinsi");
+            let kota = document.getElementById("kota");
+            let kec = document.getElementById("kecamatan");
+            let kelu = document.getElementById("kelurahan");
+
+            //get data from api
+            const getData = async (wilayah) => {
+                const response = await fetch(url + wilayah);
+                const data = await response.json();
+                console.log({ data });
+                return data;
+            }
+            
+            //add child to option
+            const displayOption = async (objek) => {
+                const options = await getData(objek.name);
+                for(option of options.data) {
+                    const newOption = document.createElement("option");
+                    newOption.value = option.id;
+                    newOption.text = option.name;
+                    objek.appendChild(newOption);
+
+                }
+            }
+            
+            //add listener for all select object
+            displayOption(provinsi);
+            provinsi.addEventListener("change", () => {
+                displayOption(kota);
+            });
+
+            kota.addEventListener("change", () => {
+                displayOption(kec);
+            });
+            kec.addEventListener("change", () => {
+                displayOption(kelu);
+            });
+
+
+        </script>
+    </body>
+</html>
