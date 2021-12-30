@@ -6,31 +6,122 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
         <link rel="stylesheet" href="assets/vendor/bootstrap/css/bootstrap.min.css">
+        <script src="assets/vendor/jquery/jquery-3.2.1.js"></script>
+        <script src="assets/vendor/popper/popper.js"></script>
+        <script src="assets/vendor/bootstrap/js/bootstrap.js"></script>
+
+
+
+        <script src='https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.js'></script>
+        <link href='https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.css' rel='stylesheet' />
+
         <title>Wilayah</title>
+        <style>
+            body{
+                background-color: rgb(202, 202, 202);
+            }
+            #map {
+                width: 100%;
+                height: 773px;
+            }
+            .bg-grey{
+                background-color: rgb(221, 221, 221);
+            }
+            .footer{
+                margin-bottom: 0;
+            }
+        </style>
     </head>
     <body>
-        <div class="container">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <a class="navbar-brand" href="#">Wilayah Indonesia</a>
+
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav ml-auto">
+                  <li class="nav-item active">
+                    <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="#">About</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="#">Profile</a>
+                  </li>
+                </ul>
+                <!-- <form class="form-inline my-2 my-lg-0">
+                  <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
+                  <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+                </form> -->
+            </div>
+        </nav>
+          
+        <div class="container-fluid mt-3">
             <div class="row">
-                <form action="" class="select-wilayah">
-                    <div class="form-group">
-                        <select name="provinsi" id="provinsi">
-                            <option value="pilih">--pilih provinsi--</option>
-                        </select>
-                        <select name="kota" id="kota">
-                            <option value="kosong">--pilih provinsi dulu--</option>
-                        </select>
-                        <select name="kecamatan" id="kecamatan">
-                            <option value="kosong">--pilih kota/kab dulu--</option>
-                        </select>
-                        <select name="kelurahan" id="kelurahan">
-                            <option value="kosong">--pilih kecamatan dahulu--</option>
-                        </select>
-                        
+                <div class="col-sm-3">
+                    <div class="card bg-secondary">
+                        <div class="card-body ">
+                            <form action="" class="select-wilayah">
+                                <div class="">
+                                    <div class="mt-3">
+                                        <select name="provinsi" id="provinsi" class="form-control">
+                                            <option value="pilih">--pilih provinsi--</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="mt-3">
+                                        <select name="kota" id="kota" class="form-control">
+                                            <option value="kosong">--pilih provinsi dulu--</option>
+                                        </select>
+                                    </div>
+                                    <div class="mt-3">
+                                        <select name="kecamatan" id="kecamatan" class="form-control">
+                                            <option value="kosong">--pilih kota/kab dulu--</option>
+                                        </select>
+                                        
+                                    </div>
+                                    <div class="mt-3">
+                                        <select name="kelurahan" id="kelurahan" class="form-control">
+                                            <option value="kosong">--pilih kecamatan dahulu--</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </form>
+            
+                            
+                        </div>
                     </div>
-                </form>
+                </div>
+                <div class="col-sm-9">
+                    <div class="card">
+                        <h4 class="card-header">
+                            PETA WILAYAH
+                        </h4>
+                        <div class="car-body">
+                            <!-- conatiner for map -->
+                            <div id="map"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
+        <footer class="footer mt-3 py-3 bg-grey">
+            <div class="container">
+                <div class="row">
+                    <div class="m-auto">
+                        2022 © 
+                        <a href="#" target="_blank">
+                            Sistem Pemetaan Wilayah Indonesia
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </footer>
 
+        <!-- script for get api -->
         <script>
             const url = "http://127.0.0.1:3000/api/";
             let provinsi = document.getElementById("provinsi");
@@ -39,20 +130,25 @@
             let kelu = document.getElementById("kelurahan");
 
             //get data from api
-            const getData = async (wilayah) => {
-                const response = await fetch(url + wilayah);
+            const getData = async (wilayah,param) => {
+                const response = await fetch(url + wilayah +"/"+param);
                 const data = await response.json();
                 console.log({ data });
                 return data;
             }
             
             //add child to option
-            const displayOption = async (objek) => {
-                const options = await getData(objek.name);
+            const displayOption = async (objek, param = "") => {
+                objek.innerHTML = "";
+                const opt = document.createElement("option");
+                opt.value = "pilih";
+                opt.text = "--pilih "+objek.name+"--"
+                objek.appendChild(opt);
+                const options = await getData(objek.name, param);
                 for(option of options.data) {
                     const newOption = document.createElement("option");
                     newOption.value = option.id;
-                    newOption.text = option.name;
+                    newOption.text = option.name.toUpperCase();
                     objek.appendChild(newOption);
 
                 }
@@ -61,17 +157,29 @@
             //add listener for all select object
             displayOption(provinsi);
             provinsi.addEventListener("change", () => {
-                displayOption(kota);
+                console.log(this);
+                displayOption(kota, provinsi.value);
             });
 
             kota.addEventListener("change", () => {
-                displayOption(kec);
+                displayOption(kec, kota.value);
             });
             kec.addEventListener("change", () => {
-                displayOption(kelu);
+                displayOption(kelu, kec.value);
             });
 
 
+        </script>
+
+        <!-- script for map -->
+        <script>
+            mapboxgl.accessToken = 'pk.eyJ1IjoiY2FuZHJhYWd1c3RpYW4iLCJhIjoiY2t2b284NjV3MjRteDJ1cWc2ajd1dXRraCJ9.qlP72PtgrpVITxr7Aa_GDA';
+            const map = new mapboxgl.Map({
+                container: 'map', // container ID
+                style: 'mapbox://styles/mapbox/streets-v11', // style URL
+                center: [119.3829406, -2.1821934], // starting position [lng, lat]
+                zoom: 4 // starting zoom
+            });
         </script>
     </body>
 </html>
