@@ -57,6 +57,9 @@
                 display: inline;
                 transition: 00.5s;
             }
+            .CodeMirror{
+                height: 100%;
+            }
         </style>
     </head>
     <body>
@@ -163,6 +166,13 @@
             </div>
         </footer>
 
+        <!-- script for global variable -->
+        <script>
+            let id_wil = 0; //variable for regional's id
+            let data = {}; //objek for json 
+            let coor = []; //array for polygon coordinate
+        </script>
+
         <!-- script for get api -->
         <script>
             const url = "http://127.0.0.1:3000/api/";
@@ -175,19 +185,15 @@
             const getData = async (wilayah,param) => {
                 const response = await fetch(url + wilayah +"/"+param);
                 const data = await response.json();
-                var editor = CodeMirror(document.getElementById('feature'), {
-                    mode: { name: "javascript", json: true },
-                    theme: "default",
-                    lineNumbers: true,
-                    readOnly: false,
-                    value: JSON.stringify(data,null,2),
-                });
+                
                 editor.setSize("100%","100%");
                 return data;
             }
             
             //add child to option
             const displayOption = async (objek, param = "") => {
+                if (param) id_wil = param; //set id's value for send data
+
                 objek.innerHTML = "";
                 const opt = document.createElement("option");
                 opt.value = "pilih";
@@ -206,7 +212,6 @@
             //add listener for all select object
             displayOption(provinsi);
             provinsi.addEventListener("change", () => {
-                console.log(this);
                 displayOption(kota, provinsi.value);
             });
 
@@ -220,6 +225,39 @@
 
         </script>
 
+        <!-- scrip for codemirror -->
+        <script>
+            //make codemirror
+            var editor = CodeMirror(document.getElementById('feature'), {
+                mode: { name: "javascript", json: true },
+                theme: "default",
+                lineNumbers: true,
+                readOnly: false,
+            });
+
+            // toggle codemirror
+            function openCode() {
+                document.getElementById("feature").style.width = "30%";
+                document.getElementById("map").style.width = "70%";
+                document.getElementById("drawer").style.display="none";
+                document.getElementById("undo").style.display="inline";
+                document.getElementById("save").style.display="inline";
+                map.resize();
+                map.on("click", getCoord);
+                setValue();
+            }
+
+            function closeCode() {
+                document.getElementById("feature").style.width = "0";
+                document.getElementById("map").style.width= "100%";
+                document.getElementById("drawer").style.display="inline";
+                document.getElementById("undo").style.display="none";
+                document.getElementById("save").style.display="none";
+                map.resize();
+                map.off("click", getCoord);
+            }
+        </script>
+
         <!-- script for map -->
         <script>
             mapboxgl.accessToken = 'pk.eyJ1IjoiY2FuZHJhYWd1c3RpYW4iLCJhIjoiY2t2b284NjV3MjRteDJ1cWc2ajd1dXRraCJ9.qlP72PtgrpVITxr7Aa_GDA';
@@ -231,26 +269,26 @@
             });
         </script>
 
-        <!-- scrip for codemirror -->
+        <!-- script for event map and codemirror -->
         <script>
-            // toggle codemirror
-            function openCode() {
-                document.getElementById("feature").style.width = "30%";
-                document.getElementById("map").style.width = "70%";
-                document.getElementById("drawer").style.display="none";
-                document.getElementById("undo").style.display="inline";
-                document.getElementById("save").style.display="inline";
-                map.resize();
+            //set value codemirror
+            function setValue() {
+                data = {
+                    id_wil,
+                    zoom: map.getZoom(),
+                    center: [map.getCenter().lng, map.getCenter().lat],
+                    coor,
+                };
+                editor.setValue(JSON.stringify(data,null,2));
             }
 
-            function closeCode() {
-                document.getElementById("feature").style.width = "0";
-                document.getElementById("map").style.width= "100%";
-                document.getElementById("drawer").style.display="inline";
-                document.getElementById("undo").style.display="none";
-                document.getElementById("save").style.display="none";
-                map.resize();
+            //event click map
+            function getCoord(e) {
+                let tmpCoor = [e.lngLat.lng, e.lngLat.lat];
+                coor.push(tmpCoor);
+                setValue();
             }
         </script>
+
     </body>
 </html>
