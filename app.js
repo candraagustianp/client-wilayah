@@ -8,7 +8,7 @@ let drawing = false; //status for drawing polygon
 
 // data api
 
-const url = "http://127.0.0.1:3000/api/";
+const url = "https://api-wilayah.herokuapp.com/api/";
 let provinsi = document.getElementById("provinsi");
 let kota = document.getElementById("kota");
 let kec = document.getElementById("kecamatan");
@@ -55,6 +55,9 @@ kota.addEventListener("change", () => {
 });
 kec.addEventListener("change", () => {
     displayOption(kelu, kec.value);
+});
+kelu.addEventListener("change", () => {
+    changeCenter(getData("spasial",kelu.value));
 });
 
 
